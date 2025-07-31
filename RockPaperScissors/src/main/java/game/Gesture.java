@@ -34,9 +34,22 @@ public enum Gesture {
             return -1;
         }
         else if (this.equals(ROCK) && g == SCISSORS) {
-
+            return 1;
+        }
+        else if (this.equals(PAPER) && g == ROCK) {
+            return 1;
+        }
+        else if (this.equals(PAPER) && g == SCISSORS) {
+            return -1;
+        }
+        else if (this.equals(SCISSORS) && g == ROCK) {
+            return -1;
+        }
+        else if (this.equals(SCISSORS) && g == PAPER) {
+            return 1;
         }
 
+        throw new IllegalStateException("Unexpected value" + g);
     }
 
     }
