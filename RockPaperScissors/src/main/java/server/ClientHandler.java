@@ -1,5 +1,8 @@
 package server;
 
+import game.Gesture;
+import game.Player;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -8,12 +11,16 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 
-public class ClientHandler implements Runnable {
+public class ClientHandler extends Player implements Runnable{
     private Socket socket;
     private PrintWriter out;
     //private List<ClientHandler> clients;
     private String username = "User";
     private Server server;
+
+    public String getUsername() {
+        return username;
+    }
 
     public Socket getSocket() {
         return socket;
@@ -36,8 +43,6 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-
-
         try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
             sendMessage("Welcome " + username + "!");
             String message;
@@ -55,9 +60,28 @@ public class ClientHandler implements Runnable {
             else {
                 username = login;
             }
+            String buffer;
 
             while ((message = in.readLine()) != null) {
                 server.broadcastMessage(username + ":" + message);
+                server.challengeToDuel(this, message);
+
+                while (server.isActiveDuel()){ //add receive message
+                    switch (message) {
+                        case "p":
+                            this.makeGesture(Gesture.PAPER);
+                            break;
+                        case "r":
+                            this.makeGesture(Gesture.ROCK);
+                            break;
+                        case "s":
+                            this.makeGesture(Gesture.SCISSORS);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
             }
         } catch (IOException ex) {
             throw new RuntimeException(ex);

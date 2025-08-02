@@ -1,5 +1,7 @@
 package server;
 
+import game.Duel;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
@@ -11,6 +13,7 @@ public class Server {
     private ServerSocket serverSocket;
     private List<ClientHandler> clients = new ArrayList<>();
     private Database db = new Database();
+    private boolean activeDuel = false;
 
     public Server(ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
@@ -59,6 +62,28 @@ public class Server {
         }
     }
 
+    public void challengeToDuel(ClientHandler challenger, String challengeeLogin){
+        for (int i = 0; i < clients.size(); i++) {
+            if (clients.get(i).getUsername().equals(challengeeLogin)) {  //either getter for username or toString() used for object of an ClientHandler class
+                System.out.println("Duel is possible");
+                activeDuel = true;
+                startDuel(challenger, clients.get(i));
+            }
+            else {
+                challenger.sendMessage("No player with this login");
+            }
+        }
+    }
+
+    public void startDuel(ClientHandler challenger, ClientHandler challengee){
+        challenger.sendMessage("Starting Duel with" + challengee.getUsername());  // same as challengeToDuel either toString() or getter for username
+        challengee.sendMessage("Starting Duel with" + challenger.getUsername());
+        Duel duel = new Duel(challenger, challengee);
+        activeDuel = false;
+    }
+
+
+
 
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = new ServerSocket(5000);
@@ -68,11 +93,8 @@ public class Server {
     }
 
 
-
-
-
-
-
-
+    public boolean isActiveDuel() {
+        return activeDuel;
+    }
 
 }
