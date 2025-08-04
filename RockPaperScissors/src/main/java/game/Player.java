@@ -1,9 +1,11 @@
 package game;
 
+import java.sql.SQLException;
+
 public class Player {
     private Duel duel;
 
-    public void makeGesture(Gesture g) {
+    public void makeGesture(Gesture g) throws SQLException {
         duel.handleGesture(this, g);
     }
 

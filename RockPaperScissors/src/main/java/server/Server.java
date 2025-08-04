@@ -6,8 +6,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Server {
     private ServerSocket serverSocket;
@@ -86,28 +88,38 @@ public class Server {
         challenger.sendMessage("Starting Duel with" + challengee.getUsername());  // same as challengeToDuel either toString() or getter for username
         challengee.sendMessage("Starting Duel with" + challenger.getUsername());
         Duel duel = new Duel(challenger, challengee);
-        duel.setOnEnd(new Duel.End() {
-            @Override
-            public void duelEnd() {
-                duel.evaluate();
-                Duel.Result duelResult = duel.evaluate();
-                //duelResult.winner(); -- possible to get all lines (fields, winner and loser in this case) from a record like this
-                if (duelResult == null) {
-                    broadcastMessage("Duel between " + challenger.getUsername() + " and " + challengee.getUsername() + " ended in a tie");
-                }
-                else {
-                    for (int i = 0; i < clients.size(); i++) {
-                        if (clients.get(i).getUsername().equals(duelResult.winner().toString())) {
-                            clients.get(i).sendMessage("You've won the duel");
-                        }
-                        if (clients.get(i).getUsername().equals(duelResult.loser().toString())) {
-                            clients.get(i).sendMessage("You've lost the duel");
-                        }
-                    }
-                    broadcastMessage(duelResult.winner() + " has defeated " + duelResult.loser() + " in a duel");
-                }
-            }
-        });  // with anonymous block (way), can be done with a lambda statement
+           duel.setOnEnd(new Duel.End() {
+               @Override
+               public void duelEnd() throws SQLException {
+                   duel.evaluate();
+                   Duel.Result duelResult = duel.evaluate();
+                   //duelResult.winner(); -- possible to get all lines (fields, winner and loser in this case) from a record like this
+                   if (duelResult == null) {
+                       broadcastMessage("Duel between " + challenger.getUsername() + " and " + challengee.getUsername() + " ended in a tie");
+                   }
+                   else {
+                       for (int i = 0; i < clients.size(); i++) {
+                           if (clients.get(i).getUsername().equals(duelResult.winner().toString())) {
+                               clients.get(i).sendMessage("You've won the duel");
+                           }
+                           if (clients.get(i).getUsername().equals(duelResult.loser().toString())) {
+                               clients.get(i).sendMessage("You've lost the duel");
+                           }
+                       }
+
+                       db.updateLeaderboard(duelResult.winner().toString(), duelResult.loser().toString());
+
+                       System.out.println("Leaderboard list");
+                       for (Map.Entry <String, Integer> entry : getDb().getLeaderboard().entrySet()){
+                           System.out.printf("%-25s : %s%n", entry.getKey(), entry.getValue());  // pretty way to print a hashmap
+                       }
+
+                       //System.out.println("Leaderboard list " + db.getLeaderboard()); normal way to print a hashmap (standart)
+
+                       broadcastMessage(duelResult.winner() + " has defeated " + duelResult.loser() + " in a duel");
+                   }
+               }
+           });  // with anonymous block (way), can be done with a lambda statement
 
         activeDuel = false;
     }

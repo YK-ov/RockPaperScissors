@@ -1,6 +1,8 @@
 package game;
 
 
+import java.sql.SQLException;
+
 public class Duel {
     private Player playerOne;
     private Player playerTwo;
@@ -22,7 +24,7 @@ public class Duel {
         playerTwo.enterDuel(this);
     }
 
-    public void handleGesture(Player player, Gesture gesture) {
+    public void handleGesture(Player player, Gesture gesture) throws SQLException {
         if (player == playerOne) {
             gestureOne = gesture;
         }
@@ -62,7 +64,7 @@ public class Duel {
 
     @FunctionalInterface
     public interface End{
-        public void duelEnd();
+        public void duelEnd() throws SQLException;
     }
 
 

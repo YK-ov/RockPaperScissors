@@ -3,6 +3,8 @@ import game.Gesture;
 import game.Player;
 import org.junit.jupiter.api.Test;
 
+import java.sql.SQLException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PlayerTest {
@@ -24,7 +26,7 @@ public class PlayerTest {
     }
 
     @Test
-    void evaluateWinnerTest() {
+    void evaluateWinnerTest() throws SQLException {
     Player playerOne = new Player();
     Player playerTwo = new Player();
 
@@ -43,7 +45,7 @@ public class PlayerTest {
     }
 
     @Test
-    void evaluateTieTest() {
+    void evaluateTieTest() throws SQLException {
     Player playerOne = new Player();
     Player playerTwo = new Player();
 

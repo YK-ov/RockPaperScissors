@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.List;
 
 public class ClientHandler extends Player implements Runnable{
@@ -85,8 +86,9 @@ public class ClientHandler extends Player implements Runnable{
             }
         } catch (IOException ex) {
             throw new RuntimeException(ex);
-        }
-        finally {
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
             server.removeClient(this);
             server.broadcastMessage("Goodbye!" + username);
         }
