@@ -63,8 +63,15 @@ public class Server {
     }
 
     public void challengeToDuel(ClientHandler challenger, String challengeeLogin){
+        if (challenger.getUsername().equals(challengeeLogin)) {
+            challenger.sendMessage("Can't duel yourself");
+        }
+
         for (int i = 0; i < clients.size(); i++) {
-            if (clients.get(i).getUsername().equals(challengeeLogin)) {  //either getter for username or toString() used for object of an ClientHandler class
+            if (clients.get(i).getUsername().equals(challengeeLogin) && clients.get(i).isDuelling() == true) {  //either getter for username or toString() used for object of an ClientHandler class
+                challenger.sendMessage("The challengee is already duelling");
+            }
+            else if (clients.get(i).getUsername().equals(challengeeLogin)) {  //either getter for username or toString() used for object of an ClientHandler class
                 System.out.println("Duel is possible");
                 activeDuel = true;
                 startDuel(challenger, clients.get(i));
@@ -79,6 +86,29 @@ public class Server {
         challenger.sendMessage("Starting Duel with" + challengee.getUsername());  // same as challengeToDuel either toString() or getter for username
         challengee.sendMessage("Starting Duel with" + challenger.getUsername());
         Duel duel = new Duel(challenger, challengee);
+        duel.setOnEnd(new Duel.End() {
+            @Override
+            public void duelEnd() {
+                duel.evaluate();
+                Duel.Result duelResult = duel.evaluate();
+                //duelResult.winner(); -- possible to get all lines (fields, winner and loser in this case) from a record like this
+                if (duelResult == null) {
+                    broadcastMessage("Duel between " + challenger.getUsername() + " and " + challengee.getUsername() + " ended in a tie");
+                }
+                else {
+                    for (int i = 0; i < clients.size(); i++) {
+                        if (clients.get(i).getUsername().equals(duelResult.winner().toString())) {
+                            clients.get(i).sendMessage("You've won the duel");
+                        }
+                        if (clients.get(i).getUsername().equals(duelResult.loser().toString())) {
+                            clients.get(i).sendMessage("You've lost the duel");
+                        }
+                    }
+                    broadcastMessage(duelResult.winner() + " has defeated " + duelResult.loser() + " in a duel");
+                }
+            }
+        });  // with anonymous block (way), can be done with a lambda statement
+
         activeDuel = false;
     }
 
